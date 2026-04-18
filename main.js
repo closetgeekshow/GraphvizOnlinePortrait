@@ -23,32 +23,65 @@
   splitter.addEventListener('dblclick', (e) => {
     document.documentElement.style.setProperty('--editor-width', `calc(50% - var(--splitter-width))`);
   });
-  splitter.addEventListener('mousedown', (e) => {
+
+  // Replaced mousedown with multi-device start handler for orientation awareness
+  function startSplitterDrag(e) {
+    if (e.type !== 'touchstart') {
+      e.preventDefault();
+    }
+    
     document.documentElement.classList.add('splitter-is-dragging');
-    // overlay to prevent mouse pointer flickering when dragging the splitter to the left
+    // overlay to prevent mouse pointer flickering when dragging the splitter over the iframe/editor
     const overlayElement = editorPaneElement.appendChild(document.createElement('div'));
     Object.assign(overlayElement.style, { position: 'absolute', inset: 0, zIndex: 10 });
-    document.addEventListener('mousemove', handleMouseMoveWhileDraggingSplitter);
-    document.addEventListener('mouseup', () => {
+    
+    function handleMove(ev) {
+      if (ev.type === 'touchmove') {
+        ev.preventDefault(); // Prevent page scrolling while dragging splitter
+      }
+      
+      const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+      const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+      
+      const isPortrait = window.matchMedia("(max-width: 768px) and (orientation: portrait)").matches;
+      let percentage;
+
+      if (isPortrait) {
+          // On mobile portrait, we drag vertically. Editor is at bottom.
+          const windowHeight = window.innerHeight;
+          percentage = ((windowHeight - clientY) / windowHeight) * 100;
+      } else {
+          // On desktop, we drag horizontally. Editor is on left.
+          const windowWidth = window.innerWidth;
+          percentage = (clientX / windowWidth) * 100;
+      }
+
+      // Limit the splitter to reasonable bounds (10% to 90%)
+      if (percentage >= 10 && percentage <= 90) {
+        document.documentElement.style.setProperty('--editor-width', `${percentage}%`);
+        resizeSVG({ throttle: 100 });
+      }
+    }
+
+    function handleUp() {
       document.documentElement.classList.remove('splitter-is-dragging');
       overlayElement.remove();
-      document.removeEventListener('mousemove', handleMouseMoveWhileDraggingSplitter);
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseup', handleUp);
+      document.removeEventListener('touchmove', handleMove);
+      document.removeEventListener('touchend', handleUp);
       resizeSVG();
-    }, { once: true });
-    e.preventDefault();
-  });
-
-  function handleMouseMoveWhileDraggingSplitter(e) {
-    const windowWidth = window.innerWidth;
-    const newLeft = e.clientX;
-    const percentage = (newLeft / windowWidth) * 100;
-
-    // Limit the splitter to reasonable bounds (10% to 90%)
-    if (percentage >= 10 && percentage <= 90) {
-      document.documentElement.style.setProperty('--editor-width', `${percentage}%`);
-      resizeSVG({ throttle: 100 });
     }
+
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleUp, { once: true });
+    document.addEventListener('touchmove', handleMove, { passive: false });
+    document.addEventListener('touchend', handleUp, { once: true });
   }
+
+  // Attach both mouse and touch events natively
+  splitter.addEventListener('mousedown', startSplitterDrag);
+  splitter.addEventListener('touchstart', startSplitterDrag, { passive: false });
 
   toggleBtn.addEventListener('click', () => {
     document.documentElement.classList.toggle('editor-collapsed')
