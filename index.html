@@ -4,10 +4,27 @@
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <!-- Crucial meta tag for mobile responsiveness -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Prevents user scaling of the UI while allowing the app to handle gestures internally -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Graphviz Online</title>
   <link rel="stylesheet" href="style.css" />
+  <script>
+    // Forcefully disable pinch-to-zoom on the document level to ensure only the graph zooms
+    document.addEventListener('touchstart', function (event) {
+      if (event.touches.length > 1) {
+        event.preventDefault();
+      }
+    }, { passive: false });
+    
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (event) {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+  </script>
 </head>
 
 <body>
@@ -101,78 +118,6 @@
   <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"
     xintegrity="sha512-qtX0GLM3qX8rxJN1gyDfcnMFFrKvixfoEOwbBib9VafR5vbChV5LeE5wSI/x+IlCkTY5ZFddFDCCfaVJJNnuKQ=="
-    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="viz-global.js"></script>
-  <script src="svg-pan-zoom.min.js" type="text/javascript" charset="utf-8"></script>
-  <script src="hammer.min.js" type="text/javascript" charset="utf-8"></script>
-  <script src="main.js" type="text/javascript" charset="utf-8"></script>
-</body>
-
-</html>  a3 -> end;
-  b3 -> end;
-
-  start [shape=Mdiamond];
-  end [shape=Msquare];
-}</pre>
-  </div>
-  <div id="splitter"></div>
-  <div id="review-pane">
-    <div id="options">
-      <label id="engine">
-        Engine:
-        <select>
-          <option>circo</option>
-          <option selected="">dot</option>
-          <option>fdp</option>
-          <option>nop</option>
-          <option>nop2</option>
-          <option>neato</option>
-          <option>sfdp</option>
-          <option>twopi</option>
-          <option>osage</option>
-          <option>patchwork</option>
-        </select>
-      </label>
-
-      <label id="format">
-        Format:
-        <select>
-          <option selected="">svg</option>
-          <option>png</option>
-          <option>json</option>
-          <option>xdot</option>
-          <option>plain</option>
-          <option>ps</option>
-        </select>
-      </label>
-
-      <label id="raw" class="disabled">
-        <input type="checkbox" disabled=""> Show raw output
-      </label>
-
-      <label>
-        <a href="#" target="_blank" id="download">Download</a>
-      </label>
-
-      <label>
-        <input type="button" value="Share" id="share">
-      </label>
-
-      <input type="input" value="" id="shareurl">
-
-      <div style="flex-grow: 1;">
-        <a id="github-link" href="https://github.com/dreampuf/GraphvizOnline"></a>
-      </div>
-    </div>
-    <div id="review">
-      <div id="error"></div>
-    </div>
-  </div>
-  <div id="status"></div>
-
-  <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"
-    integrity="sha512-qtX0GLM3qX8rxJN1gyDfcnMFFrKvixfoEOwbBib9VafR5vbChV5LeE5wSI/x+IlCkTY5ZFddFDCCfaVJJNnuKQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="viz-global.js"></script>
   <script src="svg-pan-zoom.min.js" type="text/javascript" charset="utf-8"></script>
