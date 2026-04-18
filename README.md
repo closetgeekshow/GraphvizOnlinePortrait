@@ -1,3 +1,7 @@
+# Lazy portrait fork
+
+got a bunch of bugs to fix, but I told gemini flash to portrait flip it and make the toolbar scroll. will add some other mobile friendly tweaks maybe, but it does what I needed it to on my phone 
+
 # Introduction
 
 Author: [dreampuf](https://github.com/dreampuf/)
